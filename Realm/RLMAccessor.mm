@@ -685,19 +685,6 @@ void RLMReplaceSharedSchemaMethod(Class accessorClass, RLMObjectSchema *schema) 
     class_addMethod(metaClass, @selector(sharedSchema), imp, "@@:");
 }
 
-static NSMutableSet *s_generatedClasses = [NSMutableSet new];
-static void RLMMarkClassAsGenerated(Class cls) {
-    @synchronized (s_generatedClasses) {
-        [s_generatedClasses addObject:cls];
-    }
-}
-
-bool RLMIsGeneratedClass(Class cls) {
-    @synchronized (s_generatedClasses) {
-        return [s_generatedClasses containsObject:cls];
-    }
-}
-
 static Class RLMCreateAccessorClass(Class objectClass,
                                     RLMObjectSchema *schema,
                                     const char *accessorClassName,
@@ -738,7 +725,6 @@ static Class RLMCreateAccessorClass(Class objectClass,
         }
     }
 
-    RLMMarkClassAsGenerated(accClass);
     objc_registerClassPair(accClass);
 
     return accClass;
@@ -749,7 +735,7 @@ Class RLMAccessorClassForObjectClass(Class objectClass, RLMObjectSchema *schema,
 }
 
 Class RLMStandaloneAccessorClassForObjectClass(Class objectClass, RLMObjectSchema *schema) {
-    return RLMCreateAccessorClass(objectClass, schema, [@"RLMStandalone_" stringByAppendingString:schema.className].UTF8String,
+    return RLMCreateAccessorClass(objectClass, schema, [@"RLMGenerated Unmanaged " stringByAppendingString:schema.className].UTF8String,
                                   RLMAccessorStandaloneGetter, RLMAccessorStandaloneSetter);
 }
 
