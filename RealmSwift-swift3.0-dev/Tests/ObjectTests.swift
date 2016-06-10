@@ -33,7 +33,7 @@ class ObjectTests: TestCase {
         let realm = try! Realm()
         var persisted: SwiftStringObject!
         try! realm.write {
-            persisted = realm.create(SwiftStringObject.self, value: [:])
+            persisted = realm.createObject(ofType: SwiftStringObject.self, populatedWith: [:])
             XCTAssertNotNil(persisted.realm)
             XCTAssertEqual(realm, persisted.realm!)
         }
@@ -78,7 +78,7 @@ class ObjectTests: TestCase {
         }
 
         try! realm.write {
-            realm.deleteAll()
+            realm.deleteAllObjects()
             XCTAssertTrue(object.isInvalidated)
         }
         XCTAssertTrue(object.isInvalidated)
@@ -114,35 +114,35 @@ class ObjectTests: TestCase {
         XCTAssertEqual(SwiftIndexedPropertiesObject.indexedProperties().count, 8)
 
         let objectSchema = SwiftIndexedPropertiesObject().objectSchema
-        XCTAssertTrue(objectSchema["stringCol"]!.indexed)
-        XCTAssertTrue(objectSchema["intCol"]!.indexed)
-        XCTAssertTrue(objectSchema["int8Col"]!.indexed)
-        XCTAssertTrue(objectSchema["int16Col"]!.indexed)
-        XCTAssertTrue(objectSchema["int32Col"]!.indexed)
-        XCTAssertTrue(objectSchema["int64Col"]!.indexed)
-        XCTAssertTrue(objectSchema["boolCol"]!.indexed)
-        XCTAssertTrue(objectSchema["dateCol"]!.indexed)
+        XCTAssertTrue(objectSchema["stringCol"]!.isIndexed)
+        XCTAssertTrue(objectSchema["intCol"]!.isIndexed)
+        XCTAssertTrue(objectSchema["int8Col"]!.isIndexed)
+        XCTAssertTrue(objectSchema["int16Col"]!.isIndexed)
+        XCTAssertTrue(objectSchema["int32Col"]!.isIndexed)
+        XCTAssertTrue(objectSchema["int64Col"]!.isIndexed)
+        XCTAssertTrue(objectSchema["boolCol"]!.isIndexed)
+        XCTAssertTrue(objectSchema["dateCol"]!.isIndexed)
 
-        XCTAssertFalse(objectSchema["floatCol"]!.indexed)
-        XCTAssertFalse(objectSchema["doubleCol"]!.indexed)
-        XCTAssertFalse(objectSchema["dataCol"]!.indexed)
+        XCTAssertFalse(objectSchema["floatCol"]!.isIndexed)
+        XCTAssertFalse(objectSchema["doubleCol"]!.isIndexed)
+        XCTAssertFalse(objectSchema["dataCol"]!.isIndexed)
     }
 
     func testIndexedOptionalProperties() {
         XCTAssertEqual(Object.indexedProperties(), [], "indexed properties should default to []")
         XCTAssertEqual(SwiftIndexedOptionalPropertiesObject.indexedProperties().count, 8)
-        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalStringCol"]!.indexed)
-        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalDateCol"]!.indexed)
-        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalBoolCol"]!.indexed)
-        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalIntCol"]!.indexed)
-        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalInt8Col"]!.indexed)
-        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalInt16Col"]!.indexed)
-        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalInt32Col"]!.indexed)
-        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalInt64Col"]!.indexed)
+        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalStringCol"]!.isIndexed)
+        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalDateCol"]!.isIndexed)
+        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalBoolCol"]!.isIndexed)
+        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalIntCol"]!.isIndexed)
+        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalInt8Col"]!.isIndexed)
+        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalInt16Col"]!.isIndexed)
+        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalInt32Col"]!.isIndexed)
+        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalInt64Col"]!.isIndexed)
 
-        XCTAssertFalse(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalDataCol"]!.indexed)
-        XCTAssertFalse(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalFloatCol"]!.indexed)
-        XCTAssertFalse(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalDoubleCol"]!.indexed)
+        XCTAssertFalse(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalDataCol"]!.isIndexed)
+        XCTAssertFalse(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalFloatCol"]!.isIndexed)
+        XCTAssertFalse(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalDoubleCol"]!.isIndexed)
     }
 
     func testValueForKey() {
@@ -161,7 +161,7 @@ class ObjectTests: TestCase {
 
         test(SwiftObject())
         try! Realm().write {
-            let persistedObject = try! Realm().create(SwiftObject.self, value: [:])
+            let persistedObject = try! Realm().createObject(ofType: SwiftObject.self, populatedWith: [:])
             test(persistedObject)
         }
     }
@@ -200,7 +200,7 @@ class ObjectTests: TestCase {
         XCTAssertEqual((getter(object, "arrayCol") as! List<SwiftBoolObject>).count, 1)
         XCTAssertEqual((getter(object, "arrayCol") as! List<SwiftBoolObject>).first!, boolObject)
 
-        list.removeAll()
+        list.removeAllObjects()
         setter(object, list, "arrayCol")
         XCTAssertEqual((getter(object, "arrayCol") as! List<SwiftBoolObject>).count, 0)
 
@@ -242,7 +242,7 @@ class ObjectTests: TestCase {
         XCTAssertEqual((getter(object, "arrayCol") as! List<DynamicObject>).first!, boolObject)
 
         let list = getter(object, "arrayCol") as! List<DynamicObject>
-        list.removeAll()
+        list.removeAllObjects()
         setter(object, list, "arrayCol")
         XCTAssertEqual((getter(object, "arrayCol") as! List<DynamicObject>).count, 0)
 
@@ -256,13 +256,13 @@ class ObjectTests: TestCase {
         autoreleasepool {
             let realm = self.realmWithTestPath()
             try! realm.write {
-                _ = realm.create(SwiftObject)
+                _ = realm.createObject(ofType: SwiftObject.self)
             }
         }
         autoreleasepool {
             var enumerated = false
             let configuration = Realm.Configuration(schemaVersion: 1, migrationBlock: { migration, _ in
-                migration.enumerate(SwiftObject.className()) { oldObject, newObject in
+                migration.enumerateObjects(ofType: SwiftObject.className()) { oldObject, newObject in
                     if let newObject = newObject {
                         block(newObject, migration)
                         enumerated = true
@@ -284,13 +284,13 @@ class ObjectTests: TestCase {
         }
 
         withMigrationObject { migrationObject, migration in
-            let boolObject = migration.create("SwiftBoolObject", value: [true])
+            let boolObject = migration.createObject(ofType: "SwiftBoolObject", populatedWith: [true])
             self.dynamicSetAndTestAllTypes(setter, getter: getter, object: migrationObject, boolObject: boolObject)
         }
 
         setAndTestAllTypes(setter, getter: getter, object: SwiftObject())
         try! Realm().write {
-            let persistedObject = try! Realm().create(SwiftObject.self, value: [:])
+            let persistedObject = try! Realm().createObject(ofType: SwiftObject.self, populatedWith: [:])
             self.setAndTestAllTypes(setter, getter: getter, object: persistedObject)
         }
     }
@@ -305,13 +305,13 @@ class ObjectTests: TestCase {
         }
 
         withMigrationObject { migrationObject, migration in
-            let boolObject = migration.create("SwiftBoolObject", value: [true])
+            let boolObject = migration.createObject(ofType: "SwiftBoolObject", populatedWith: [true])
             self.dynamicSetAndTestAllTypes(setter, getter: getter, object: migrationObject, boolObject: boolObject)
         }
 
         setAndTestAllTypes(setter, getter: getter, object: SwiftObject())
         try! Realm().write {
-            let persistedObject = try! Realm().create(SwiftObject.self, value: [:])
+            let persistedObject = try! Realm().createObject(ofType: SwiftObject.self, populatedWith: [:])
             self.setAndTestAllTypes(setter, getter: getter, object: persistedObject)
         }
     }
@@ -321,7 +321,7 @@ class ObjectTests: TestCase {
         let arrayObject = SwiftArrayPropertyObject()
         let str1 = SwiftStringObject()
         let str2 = SwiftStringObject()
-        arrayObject.array.appendContentsOf([str1, str2])
+        arrayObject.array.append(objectsIn: [str1, str2])
         try! realm.write {
             realm.add(arrayObject)
         }

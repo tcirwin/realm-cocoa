@@ -152,9 +152,9 @@ class RealmCollectionTypeTests: TestCase {
             fatalError("Test precondition failed")
         }
         XCTAssertEqual(2, collection.count)
-        XCTAssertEqual(1, collection.filter("stringCol = '1'").count)
-        XCTAssertEqual(1, collection.filter("stringCol = '2'").count)
-        XCTAssertEqual(0, collection.filter("stringCol = '0'").count)
+        XCTAssertEqual(1, collection.filter(using: "stringCol = '1'").count)
+        XCTAssertEqual(1, collection.filter(using: "stringCol = '2'").count)
+        XCTAssertEqual(0, collection.filter(using: "stringCol = '0'").count)
     }
 
     func testIndexOfObject() {
@@ -164,7 +164,7 @@ class RealmCollectionTypeTests: TestCase {
         XCTAssertEqual(0, collection.index(of: str1)!)
         XCTAssertEqual(1, collection.index(of: str2)!)
 
-        let str1Only = collection.filter("stringCol = '1'")
+        let str1Only = collection.filter(using: "stringCol = '1'")
         XCTAssertEqual(0, str1Only.index(of: str1)!)
         XCTAssertNil(str1Only.index(of: str2))
     }
@@ -177,19 +177,19 @@ class RealmCollectionTypeTests: TestCase {
         let pred2 = NSPredicate(format: "stringCol = '2'")
         let pred3 = NSPredicate(format: "stringCol = '3'")
 
-        XCTAssertEqual(0, collection.index(of: pred1)!)
-        XCTAssertEqual(1, collection.index(of: pred2)!)
-        XCTAssertNil(collection.index(of: pred3))
+        XCTAssertEqual(0, collection.indexOfObject(for: pred1)!)
+        XCTAssertEqual(1, collection.indexOfObject(for: pred2)!)
+        XCTAssertNil(collection.indexOfObject(for: pred3))
     }
 
     func testIndexOfFormat() {
         guard let collection = collection else {
             fatalError("Test precondition failed")
         }
-        XCTAssertEqual(0, collection.index(of: "stringCol = '1'")!)
-        XCTAssertEqual(0, collection.index(of: "stringCol = %@", "1")!)
-        XCTAssertEqual(1, collection.index(of: "stringCol = %@", "2")!)
-        XCTAssertNil(collection.index(of: "stringCol = %@", "3"))
+        XCTAssertEqual(0, collection.indexOfObject(for: "stringCol = '1'")!)
+        XCTAssertEqual(0, collection.indexOfObject(for: "stringCol = %@", "1")!)
+        XCTAssertEqual(1, collection.indexOfObject(for: "stringCol = %@", "2")!)
+        XCTAssertNil(collection.indexOfObject(for: "stringCol = %@", "3"))
     }
 
     func testSubscript() {
@@ -208,8 +208,8 @@ class RealmCollectionTypeTests: TestCase {
             fatalError("Test precondition failed")
         }
         XCTAssertEqual(str1, collection.first!)
-        XCTAssertEqual(str2, collection.filter("stringCol = '2'").first!)
-        XCTAssertNil(collection.filter("stringCol = '3'").first)
+        XCTAssertEqual(str2, collection.filter(using: "stringCol = '2'").first!)
+        XCTAssertNil(collection.filter(using: "stringCol = '3'").first)
     }
 
     func testLast() {
@@ -217,8 +217,8 @@ class RealmCollectionTypeTests: TestCase {
             fatalError("Test precondition failed")
         }
         XCTAssertEqual(str2, collection.last!)
-        XCTAssertEqual(str2, collection.filter("stringCol = '2'").last!)
-        XCTAssertNil(collection.filter("stringCol = '3'").last)
+        XCTAssertEqual(str2, collection.filter(using: "stringCol = '2'").last!)
+        XCTAssertNil(collection.filter(using: "stringCol = '3'").last)
     }
 
     func testValueForKey() {
@@ -248,10 +248,10 @@ class RealmCollectionTypeTests: TestCase {
         guard let collection = collection else {
             fatalError("Test precondition failed")
         }
-        XCTAssertEqual(1, collection.filter("stringCol = '1'").count)
-        XCTAssertEqual(1, collection.filter("stringCol = %@", "1").count)
-        XCTAssertEqual(1, collection.filter("stringCol = %@", "2").count)
-        XCTAssertEqual(0, collection.filter("stringCol = %@", "3").count)
+        XCTAssertEqual(1, collection.filter(using: "stringCol = '1'").count)
+        XCTAssertEqual(1, collection.filter(using: "stringCol = %@", "1").count)
+        XCTAssertEqual(1, collection.filter(using: "stringCol = %@", "2").count)
+        XCTAssertEqual(0, collection.filter(using: "stringCol = %@", "3").count)
     }
 
     func testFilterList() {
@@ -263,7 +263,7 @@ class RealmCollectionTypeTests: TestCase {
         try! realm.write {
             realm.add(outerArray)
         }
-        XCTAssertEqual(1, outerArray.array.filter("ANY array IN %@", realm.objects(SwiftObject)).count)
+        XCTAssertEqual(1, outerArray.array.filter(using: "ANY array IN %@", realm.allObjects(ofType: SwiftObject.self)).count)
     }
 
     func testFilterResults() {
@@ -273,8 +273,7 @@ class RealmCollectionTypeTests: TestCase {
         try! realm.write {
             realm.add(array)
         }
-        XCTAssertEqual(1,
-            realm.objects(SwiftListOfSwiftObject).filter("ANY array IN %@", realm.objects(SwiftObject)).count)
+        XCTAssertEqual(1, realm.allObjects(ofType: SwiftListOfSwiftObject.self).filter(using: "ANY array IN %@", realm.allObjects(ofType: SwiftObject.self)).count)
     }
 
     func testFilterPredicate() {
@@ -285,34 +284,34 @@ class RealmCollectionTypeTests: TestCase {
         let pred2 = NSPredicate(format: "stringCol = '2'")
         let pred3 = NSPredicate(format: "stringCol = '3'")
 
-        XCTAssertEqual(1, collection.filter(pred1).count)
-        XCTAssertEqual(1, collection.filter(pred2).count)
-        XCTAssertEqual(0, collection.filter(pred3).count)
+        XCTAssertEqual(1, collection.filter(using: pred1).count)
+        XCTAssertEqual(1, collection.filter(using: pred2).count)
+        XCTAssertEqual(0, collection.filter(using: pred3).count)
     }
 
     func testSortWithProperty() {
         guard let collection = collection else {
             fatalError("Test precondition failed")
         }
-        var sorted = collection.sorted("stringCol", ascending: true)
+        var sorted = collection.sorted(onProperty: "stringCol", ascending: true)
         XCTAssertEqual("1", sorted[0].stringCol)
         XCTAssertEqual("2", sorted[1].stringCol)
 
-        sorted = collection.sorted("stringCol", ascending: false)
+        sorted = collection.sorted(onProperty: "stringCol", ascending: false)
         XCTAssertEqual("2", sorted[0].stringCol)
         XCTAssertEqual("1", sorted[1].stringCol)
 
-        assertThrows(collection.sorted("noSuchCol", ascending: true), named: "Invalid sort property")
+        assertThrows(collection.sorted(onProperty: "noSuchCol", ascending: true), named: "Invalid sort property")
     }
 
     func testSortWithDescriptor() {
         let collection = getAggregateableCollection()
 
-        var sorted = collection.sorted([SortDescriptor(property: "intCol", ascending: true)])
+        var sorted = collection.sorted(with: [SortDescriptor(property: "intCol", ascending: true)])
         XCTAssertEqual(1, sorted[0].intCol)
         XCTAssertEqual(2, sorted[1].intCol)
 
-        sorted = collection.sorted([SortDescriptor(property: "doubleCol", ascending: false),
+        sorted = collection.sorted(with: [SortDescriptor(property: "doubleCol", ascending: false),
             SortDescriptor(property: "intCol", ascending: false)])
         XCTAssertEqual(2.22, sorted[0].doubleCol)
         XCTAssertEqual(3, sorted[0].intCol)
@@ -320,45 +319,45 @@ class RealmCollectionTypeTests: TestCase {
         XCTAssertEqual(2, sorted[1].intCol)
         XCTAssertEqual(1.11, sorted[2].doubleCol)
 
-        assertThrows(collection.sorted([SortDescriptor(property: "noSuchCol")]), named: "Invalid sort property")
+        assertThrows(collection.sorted(with: [SortDescriptor(property: "noSuchCol")]), named: "Invalid sort property")
     }
 
     func testMin() {
         let collection = getAggregateableCollection()
-        XCTAssertEqual(1, collection.min("intCol") as Int!)
-        XCTAssertEqual(Float(1.1), collection.min("floatCol") as Float!)
-        XCTAssertEqual(Double(1.11), collection.min("doubleCol") as Double!)
-        XCTAssertEqual(NSDate(timeIntervalSince1970: 1), collection.min("dateCol") as NSDate!)
+        XCTAssertEqual(1, collection.minimumValue(ofProperty: "intCol") as Int!)
+        XCTAssertEqual(Float(1.1), collection.minimumValue(ofProperty: "floatCol") as Float!)
+        XCTAssertEqual(Double(1.11), collection.minimumValue(ofProperty: "doubleCol") as Double!)
+        XCTAssertEqual(NSDate(timeIntervalSince1970: 1), collection.minimumValue(ofProperty: "dateCol") as NSDate!)
 
-        assertThrows(collection.min("noSuchCol") as Float!, named: "Invalid property name")
+        assertThrows(collection.minimumValue(ofProperty: "noSuchCol") as Float!, named: "Invalid property name")
     }
 
     func testMax() {
         let collection = getAggregateableCollection()
-        XCTAssertEqual(3, collection.max("intCol") as Int!)
-        XCTAssertEqual(Float(2.2), collection.max("floatCol") as Float!)
-        XCTAssertEqual(Double(2.22), collection.max("doubleCol") as Double!)
-        XCTAssertEqual(NSDate(timeIntervalSince1970: 2), collection.max("dateCol") as NSDate!)
+        XCTAssertEqual(3, collection.maximumValue(ofProperty: "intCol") as Int!)
+        XCTAssertEqual(Float(2.2), collection.maximumValue(ofProperty: "floatCol") as Float!)
+        XCTAssertEqual(Double(2.22), collection.maximumValue(ofProperty: "doubleCol") as Double!)
+        XCTAssertEqual(NSDate(timeIntervalSince1970: 2), collection.maximumValue(ofProperty: "dateCol") as NSDate!)
 
-        assertThrows(collection.max("noSuchCol") as Float!, named: "Invalid property name")
+        assertThrows(collection.maximumValue(ofProperty: "noSuchCol") as Float!, named: "Invalid property name")
     }
 
     func testSum() {
         let collection = getAggregateableCollection()
-        XCTAssertEqual(6, collection.sum("intCol") as Int)
-        XCTAssertEqualWithAccuracy(Float(5.5), collection.sum("floatCol") as Float, accuracy: 0.001)
-        XCTAssertEqualWithAccuracy(Double(5.55), collection.sum("doubleCol") as Double, accuracy: 0.001)
+        XCTAssertEqual(6, collection.sum(ofProperty: "intCol") as Int)
+        XCTAssertEqualWithAccuracy(Float(5.5), collection.sum(ofProperty: "floatCol") as Float, accuracy: 0.001)
+        XCTAssertEqualWithAccuracy(Double(5.55), collection.sum(ofProperty: "doubleCol") as Double, accuracy: 0.001)
 
-        assertThrows(collection.sum("noSuchCol") as Float, named: "Invalid property name")
+        assertThrows(collection.sum(ofProperty: "noSuchCol") as Float, named: "Invalid property name")
     }
 
     func testAverage() {
         let collection = getAggregateableCollection()
-        XCTAssertEqual(2, collection.average("intCol") as Int!)
-        XCTAssertEqualWithAccuracy(Float(1.8333), collection.average("floatCol") as Float!, accuracy: 0.001)
-        XCTAssertEqualWithAccuracy(Double(1.85), collection.average("doubleCol") as Double!, accuracy: 0.001)
+        XCTAssertEqual(2, collection.average(ofProperty: "intCol") as Int!)
+        XCTAssertEqualWithAccuracy(Float(1.8333), collection.average(ofProperty: "floatCol") as Float!, accuracy: 0.001)
+        XCTAssertEqualWithAccuracy(Double(1.85), collection.average(ofProperty: "doubleCol") as Double!, accuracy: 0.001)
 
-        assertThrows(collection.average("noSuchCol")! as Float, named: "Invalid property name")
+        assertThrows(collection.average(ofProperty: "noSuchCol")! as Float, named: "Invalid property name")
     }
 
     func testFastEnumeration() {
@@ -398,7 +397,7 @@ class RealmCollectionTypeTests: TestCase {
         let collection = getAggregateableCollection()
 
         // Should not throw a type error.
-        _ = collection.filter("ANY stringListCol == %@", CTTStringObjectWithLink())
+        _ = collection.filter(using: "ANY stringListCol == %@", CTTStringObjectWithLink())
     }
 
     func testAddNotificationBlock() {
@@ -447,9 +446,9 @@ class RealmCollectionTypeTests: TestCase {
             fatalError("Test precondition failed")
         }
 
-        XCTAssertFalse(collection.invalidated)
+        XCTAssertFalse(collection.isInvalidated)
         realmWithTestPath().invalidate()
-        XCTAssertTrue(collection.realm == nil || collection.invalidated)
+        XCTAssertTrue(collection.realm == nil || collection.isInvalidated)
     }
 }
 
@@ -491,7 +490,7 @@ class ResultsTests: RealmCollectionTypeTests {
     func addObjectToResults() {
         let realm = realmWithTestPath()
         try! realm.write {
-            realm.create(CTTStringObjectWithLink.self, value: ["a"])
+            realm.createObject(ofType: CTTStringObjectWithLink.self, populatedWith: ["a"])
         }
     }
 
@@ -569,7 +568,7 @@ class ResultsWithCustomInitializerTest: TestCase {
             realm.add(SwiftCustomInitializerObject(stringVal: "A"))
         }
 
-        let collection = realm.objects(SwiftCustomInitializerObject)
+        let collection = realm.allObjects(ofType: SwiftCustomInitializerObject.self)
         let expected = collection.map { $0.stringCol }
         let actual = collection.value(forKey: "stringCol") as! [String]!
         XCTAssertEqual(expected, actual!)
@@ -580,24 +579,24 @@ class ResultsWithCustomInitializerTest: TestCase {
 class ResultsFromTableTests: ResultsTests {
 
     override func collectionBaseInWriteTransaction() -> Results<CTTStringObjectWithLink> {
-        return realmWithTestPath().objects(CTTStringObjectWithLink)
+        return realmWithTestPath().allObjects(ofType: CTTStringObjectWithLink.self)
     }
 
     override func getAggregateableCollection() -> AnyRealmCollection<CTTAggregateObject> {
         _ = makeAggregateableObjects()
-        return AnyRealmCollection(realmWithTestPath().objects(CTTAggregateObject))
+        return AnyRealmCollection(realmWithTestPath().allObjects(ofType: CTTAggregateObject.self))
     }
 }
 
 class ResultsFromTableViewTests: ResultsTests {
 
     override func collectionBaseInWriteTransaction() -> Results<CTTStringObjectWithLink> {
-        return realmWithTestPath().objects(CTTStringObjectWithLink).filter("stringCol != ''")
+        return realmWithTestPath().allObjects(ofType: CTTStringObjectWithLink.self).filter(using: "stringCol != ''")
     }
 
     override func getAggregateableCollection() -> AnyRealmCollection<CTTAggregateObject> {
         _ = makeAggregateableObjects()
-        return AnyRealmCollection(realmWithTestPath().objects(CTTAggregateObject).filter("trueCol == true"))
+        return AnyRealmCollection(realmWithTestPath().allObjects(ofType: CTTAggregateObject.self).filter(using: "trueCol == true"))
     }
 }
 
@@ -607,8 +606,8 @@ class ResultsFromLinkViewTests: ResultsTests {
         guard let str1 = str1, str2 = str2 else {
             fatalError("Test precondition failed")
         }
-        let array = realmWithTestPath().create(CTTStringList.self, value: [[str1, str2]])
-        return array.array.filter(NSPredicate(value: true))
+        let array = realmWithTestPath().createObject(ofType: CTTStringList.self, populatedWith: [[str1, str2]])
+        return array.array.filter(using: NSPredicate(value: true))
     }
 
     override func getAggregateableCollection() -> AnyRealmCollection<CTTAggregateObject> {
@@ -616,16 +615,16 @@ class ResultsFromLinkViewTests: ResultsTests {
         try! realmWithTestPath().write {
             list = CTTAggregateObjectList()
             realmWithTestPath().add(list!)
-            list!.list.appendContentsOf(makeAggregateableObjectsInWriteTransaction())
+            list!.list.append(objectsIn: makeAggregateableObjectsInWriteTransaction())
         }
-        return AnyRealmCollection(list!.list.filter(NSPredicate(value: true)))
+        return AnyRealmCollection(list!.list.filter(using: NSPredicate(value: true)))
     }
 
     override func addObjectToResults() {
         let realm = realmWithTestPath()
         try! realm.write {
-            let array = realm.objects(CTTStringList).last!
-            array.array.append(realm.create(CTTStringObjectWithLink.self, value: ["a"]))
+            let array = realm.allObjects(ofType: CTTStringList.self).last!
+            array.array.append(realm.createObject(ofType: CTTStringObjectWithLink.self, populatedWith: ["a"]))
         }
     }
 }
@@ -733,8 +732,8 @@ class ListStandaloneRealmCollectionTypeTests: ListRealmCollectionTypeTests {
 
     override func testSortWithDescriptor() {
         let collection = getAggregateableCollection()
-        assertThrows(collection.sorted([SortDescriptor(property: "intCol", ascending: true)]))
-        assertThrows(collection.sorted([SortDescriptor(property: "doubleCol", ascending: false),
+        assertThrows(collection.sorted(with: [SortDescriptor(property: "intCol", ascending: true)]))
+        assertThrows(collection.sorted(with: [SortDescriptor(property: "doubleCol", ascending: false),
             SortDescriptor(property: "intCol", ascending: false)]))
     }
 
@@ -762,16 +761,16 @@ class ListStandaloneRealmCollectionTypeTests: ListRealmCollectionTypeTests {
         guard let collection = collection else {
             fatalError("Test precondition failed")
         }
-        assertThrows(collection.sorted("stringCol", ascending: true))
-        assertThrows(collection.sorted("noSuchCol", ascending: true))
+        assertThrows(collection.sorted(onProperty: "stringCol", ascending: true))
+        assertThrows(collection.sorted(onProperty: "noSuchCol", ascending: true))
     }
 
     override func testFilterFormat() {
         guard let collection = collection else {
             fatalError("Test precondition failed")
         }
-        assertThrows(collection.filter("stringCol = '1'"))
-        assertThrows(collection.filter("noSuchCol = '1'"))
+        assertThrows(collection.filter(using: "stringCol = '1'"))
+        assertThrows(collection.filter(using: "noSuchCol = '1'"))
     }
 
     override func testFilterPredicate() {
@@ -781,53 +780,53 @@ class ListStandaloneRealmCollectionTypeTests: ListRealmCollectionTypeTests {
         let pred1 = NSPredicate(format: "stringCol = '1'")
         let pred2 = NSPredicate(format: "noSuchCol = '2'")
 
-        assertThrows(collection.filter(pred1))
-        assertThrows(collection.filter(pred2))
+        assertThrows(collection.filter(using: pred1))
+        assertThrows(collection.filter(using: pred2))
     }
 
     override func testArrayAggregateWithSwiftObjectDoesntThrow() {
         guard let collection = collection else {
             fatalError("Test precondition failed")
         }
-        assertThrows(collection.filter("ANY stringListCol == %@", CTTStringObjectWithLink()))
+        assertThrows(collection.filter(using: "ANY stringListCol == %@", CTTStringObjectWithLink()))
     }
 
     override func testMin() {
         guard let collection = collection else {
             fatalError("Test precondition failed")
         }
-        assertThrows(collection.min("intCol") as Int!)
-        assertThrows(collection.min("floatCol") as Float!)
-        assertThrows(collection.min("doubleCol") as Double!)
-        assertThrows(collection.min("dateCol") as NSDate!)
+        assertThrows(collection.minimumValue(ofProperty: "intCol") as Int!)
+        assertThrows(collection.minimumValue(ofProperty: "floatCol") as Float!)
+        assertThrows(collection.minimumValue(ofProperty: "doubleCol") as Double!)
+        assertThrows(collection.minimumValue(ofProperty: "dateCol") as NSDate!)
     }
 
     override func testMax() {
         guard let collection = collection else {
             fatalError("Test precondition failed")
         }
-        assertThrows(collection.max("intCol") as Int!)
-        assertThrows(collection.max("floatCol") as Float!)
-        assertThrows(collection.max("doubleCol") as Double!)
-        assertThrows(collection.max("dateCol") as NSDate!)
+        assertThrows(collection.maximumValue(ofProperty: "intCol") as Int!)
+        assertThrows(collection.maximumValue(ofProperty: "floatCol") as Float!)
+        assertThrows(collection.maximumValue(ofProperty: "doubleCol") as Double!)
+        assertThrows(collection.maximumValue(ofProperty: "dateCol") as NSDate!)
     }
 
     override func testSum() {
         guard let collection = collection else {
             fatalError("Test precondition failed")
         }
-        assertThrows(collection.sum("intCol") as Int)
-        assertThrows(collection.sum("floatCol") as Float)
-        assertThrows(collection.sum("doubleCol") as Double)
+        assertThrows(collection.sum(ofProperty: "intCol") as Int)
+        assertThrows(collection.sum(ofProperty: "floatCol") as Float)
+        assertThrows(collection.sum(ofProperty: "doubleCol") as Double)
     }
 
     override func testAverage() {
         guard let collection = collection else {
             fatalError("Test precondition failed")
         }
-        assertThrows(collection.average("intCol") as Int!)
-        assertThrows(collection.average("floatCol") as Float!)
-        assertThrows(collection.average("doubleCol") as Double!)
+        assertThrows(collection.average(ofProperty: "intCol") as Int!)
+        assertThrows(collection.average(ofProperty: "floatCol") as Float!)
+        assertThrows(collection.average(ofProperty: "doubleCol") as Double!)
     }
 
     override func testAddNotificationBlock() {
@@ -868,15 +867,15 @@ class ListNewlyCreatedRealmCollectionTypeTests: ListRealmCollectionTypeTests {
         guard let str1 = str1, str2 = str2 else {
             fatalError("Test precondition failure - a property was unexpectedly nil")
         }
-        let array = realmWithTestPath().create(CTTStringList.self, value: [[str1, str2] as AnyObject])
+        let array = realmWithTestPath().createObject(ofType: CTTStringList.self, populatedWith: [[str1, str2] as AnyObject])
         return array.array
     }
 
     override func getAggregateableCollection() -> AnyRealmCollection<CTTAggregateObject> {
         var list: CTTAggregateObjectList?
         try! realmWithTestPath().write {
-            list = realmWithTestPath().create(CTTAggregateObjectList.self,
-                value: [makeAggregateableObjectsInWriteTransaction()])
+            list = realmWithTestPath().createObject(ofType: CTTAggregateObjectList.self,
+                                                    populatedWith: [makeAggregateableObjectsInWriteTransaction()])
         }
         return AnyRealmCollection(list!.list)
     }
@@ -887,17 +886,17 @@ class ListRetrievedRealmCollectionTypeTests: ListRealmCollectionTypeTests {
         guard let str1 = str1, str2 = str2 else {
             fatalError("Test precondition failure - a property was unexpectedly nil")
         }
-        _ = realmWithTestPath().create(CTTStringList.self, value: [[str1, str2] as AnyObject])
-        let array = realmWithTestPath().objects(CTTStringList).first!
+        _ = realmWithTestPath().createObject(ofType: CTTStringList.self, populatedWith: [[str1, str2] as AnyObject])
+        let array = realmWithTestPath().allObjects(ofType: CTTStringList.self).first!
         return array.array
     }
 
     override func getAggregateableCollection() -> AnyRealmCollection<CTTAggregateObject> {
         var list: CTTAggregateObjectList?
         try! realmWithTestPath().write {
-            _ = realmWithTestPath().create(CTTAggregateObjectList.self,
-                value: [makeAggregateableObjectsInWriteTransaction()])
-            list = realmWithTestPath().objects(CTTAggregateObjectList.self).first
+            _ = realmWithTestPath().createObject(ofType: CTTAggregateObjectList.self,
+                                                 populatedWith: [makeAggregateableObjectsInWriteTransaction()])
+            list = realmWithTestPath().allObjects(ofType: CTTAggregateObjectList.self).first
         }
         return AnyRealmCollection(list!.list)
     }
@@ -905,8 +904,8 @@ class ListRetrievedRealmCollectionTypeTests: ListRealmCollectionTypeTests {
 
 class LinkingObjectsCollectionTypeTests: RealmCollectionTypeTests {
     func collectionBaseInWriteTransaction() -> LinkingObjects<CTTStringObjectWithLink> {
-        let target = realmWithTestPath().create(CTTLinkTarget.self, value: [0])
-        for object in realmWithTestPath().objects(CTTStringObjectWithLink) {
+        let target = realmWithTestPath().createObject(ofType: CTTLinkTarget.self, populatedWith: [0])
+        for object in realmWithTestPath().allObjects(ofType: CTTStringObjectWithLink.self) {
             object.linkCol = target
         }
         return target.stringObjects
@@ -928,7 +927,7 @@ class LinkingObjectsCollectionTypeTests: RealmCollectionTypeTests {
         var target: CTTLinkTarget?
         try! realmWithTestPath().write {
             let objects = makeAggregateableObjectsInWriteTransaction()
-            target = realmWithTestPath().create(CTTLinkTarget.self, value: [0])
+            target = realmWithTestPath().createObject(ofType: CTTLinkTarget.self, populatedWith: [0])
             for object in objects {
                 object.linkCol = target
             }

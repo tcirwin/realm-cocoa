@@ -79,11 +79,11 @@ class ListTests: TestCase {
         guard let array = array else {
             fatalError("Test precondition failure")
         }
-        XCTAssertFalse(array.invalidated)
+        XCTAssertFalse(array.isInvalidated)
 
         if let realm = arrayObject.realm {
             realm.delete(arrayObject)
-            XCTAssertTrue(array.invalidated)
+            XCTAssertTrue(array.isInvalidated)
         }
     }
 
@@ -92,12 +92,12 @@ class ListTests: TestCase {
             fatalError("Test precondition failure")
         }
 
-        array.appendContentsOf([str1, str2, str1, str2, str1, str2, str1, str2, str1,
+        array.append(objectsIn: [str1, str2, str1, str2, str1, str2, str1, str2, str1,
             str2, str1, str2, str1, str2, str1, str2, str1, str2, str1, str2])
         var str = ""
         for obj in array {
             str += obj.stringCol
-            array.appendContentsOf([str1])
+            array.append(objectsIn: [str1])
         }
 
         XCTAssertEqual(str, "12121212121212121212")
@@ -120,7 +120,7 @@ class ListTests: TestCase {
         guard let array = array, str1 = str1, str2 = str2 else {
             fatalError("Test precondition failure")
         }
-        array.appendContentsOf([str1, str2, str1])
+        array.append(objectsIn: [str1, str2, str1])
         XCTAssertEqual(Int(3), array.count)
         XCTAssertEqual(str1, array[0])
         XCTAssertEqual(str2, array[1])
@@ -131,7 +131,7 @@ class ListTests: TestCase {
         guard let array = array, str1 = str1, str2 = str2 else {
             fatalError("Test precondition failure")
         }
-        array.appendContentsOf(realmWithTestPath().objects(SwiftStringObject))
+        array.append(objectsIn: realmWithTestPath().allObjects(ofType: SwiftStringObject.self))
         XCTAssertEqual(Int(2), array.count)
         XCTAssertEqual(str1, array[0])
         XCTAssertEqual(str2, array[1])
@@ -162,14 +162,14 @@ class ListTests: TestCase {
             fatalError("Test precondition failure")
         }
 
-        array.appendContentsOf([str1, str2, str1])
+        array.append(objectsIn: [str1, str2, str1])
 
-        array.remove(at: 1)
+        array.remove(objectAtIndex: 1)
         XCTAssertEqual(str1, array[0])
         XCTAssertEqual(str1, array[1])
 
-        assertThrows(array.remove(at: 200))
-        assertThrows(array.remove(at: -200))
+        assertThrows(array.remove(objectAtIndex: 200))
+        assertThrows(array.remove(objectAtIndex: -200))
     }
 
     func testRemoveLast() {
@@ -177,16 +177,16 @@ class ListTests: TestCase {
             fatalError("Test precondition failure")
         }
 
-        array.appendContentsOf([str1, str2])
+        array.append(objectsIn: [str1, str2])
 
-        array.removeLast()
+        array.removeLastObject()
         XCTAssertEqual(Int(1), array.count)
         XCTAssertEqual(str1, array[0])
 
-        array.removeLast()
+        array.removeLastObject()
         XCTAssertEqual(Int(0), array.count)
 
-        array.removeLast() // should be a no-op
+        array.removeLastObject() // should be a no-op
         XCTAssertEqual(Int(0), array.count)
     }
 
@@ -195,12 +195,12 @@ class ListTests: TestCase {
             fatalError("Test precondition failure")
         }
 
-        array.appendContentsOf([str1, str2])
+        array.append(objectsIn: [str1, str2])
 
-        array.removeAll()
+        array.removeAllObjects()
         XCTAssertEqual(Int(0), array.count)
 
-        array.removeAll() // should be a no-op
+        array.removeAllObjects() // should be a no-op
         XCTAssertEqual(Int(0), array.count)
     }
 
@@ -209,7 +209,7 @@ class ListTests: TestCase {
             fatalError("Test precondition failure")
         }
 
-        array.appendContentsOf([str1, str1])
+        array.append(objectsIn: [str1, str1])
 
         array.replace(index: 0, object: str2)
         XCTAssertEqual(Int(2), array.count)
@@ -230,7 +230,7 @@ class ListTests: TestCase {
             fatalError("Test precondition failure")
         }
 
-        array.appendContentsOf([str1, str2])
+        array.append(objectsIn: [str1, str2])
 
         array.move(from: 1, to: 0)
 
@@ -256,7 +256,7 @@ class ListTests: TestCase {
             fatalError("Test precondition failure")
         }
 
-        array.appendContentsOf([str1, str1])
+        array.append(objectsIn: [str1, str1])
 
         array.replaceSubrange(0..<1, with: [str2])
         XCTAssertEqual(Int(2), array.count)
@@ -287,7 +287,7 @@ class ListTests: TestCase {
             fatalError("Test precondition failure")
         }
 
-        array.appendContentsOf([str1, str2])
+        array.append(objectsIn: [str1, str2])
 
         array.swap(index1: 0, 1)
         XCTAssertEqual(Int(2), array.count)
@@ -310,9 +310,9 @@ class ListTests: TestCase {
             fatalError("Test precondition failure")
         }
         if let realm = array.realm {
-            array.appendContentsOf([str1, str2])
+            array.append(objectsIn: [str1, str2])
 
-            let otherArray = realm.objects(SwiftArrayPropertyObject).first!.array
+            let otherArray = realm.allObjects(ofType: SwiftArrayPropertyObject.self).first!.array
             XCTAssertEqual(Int(2), otherArray.count)
         }
     }
@@ -327,7 +327,7 @@ class ListTests: TestCase {
         let obj = SwiftStringObject()
         obj.stringCol = "a"
         array.append(obj)
-        array.append(realmWithTestPath().create(SwiftStringObject.self, value: ["b"]))
+        array.append(realmWithTestPath().createObject(ofType: SwiftStringObject.self, populatedWith: ["b"]))
         array.append(obj)
 
         XCTAssertEqual(array.count, 3)
@@ -399,7 +399,7 @@ class ListNewlyCreatedTests: ListTests {
     override func createArray() -> SwiftArrayPropertyObject {
         let realm = realmWithTestPath()
         realm.beginWrite()
-        let array = realm.create(SwiftArrayPropertyObject.self, value: ["name", [], []])
+        let array = realm.createObject(ofType: SwiftArrayPropertyObject.self, populatedWith: ["name", [], []])
         try! realm.commitWrite()
 
         XCTAssertNotNil(array.realm)
@@ -409,7 +409,7 @@ class ListNewlyCreatedTests: ListTests {
     override func createArrayWithLinks() -> SwiftListOfSwiftObject {
         let realm = try! Realm()
         realm.beginWrite()
-        let array = realm.create(SwiftListOfSwiftObject)
+        let array = realm.createObject(ofType: SwiftListOfSwiftObject.self)
         try! realm.commitWrite()
 
         XCTAssertNotNil(array.realm)
@@ -421,9 +421,9 @@ class ListRetrievedTests: ListTests {
     override func createArray() -> SwiftArrayPropertyObject {
         let realm = realmWithTestPath()
         realm.beginWrite()
-        realm.create(SwiftArrayPropertyObject.self, value: ["name", [], []])
+        realm.createObject(ofType: SwiftArrayPropertyObject.self, populatedWith: ["name", [], []])
         try! realm.commitWrite()
-        let array = realm.objects(SwiftArrayPropertyObject).first!
+        let array = realm.allObjects(ofType: SwiftArrayPropertyObject.self).first!
 
         XCTAssertNotNil(array.realm)
         return array
@@ -432,9 +432,9 @@ class ListRetrievedTests: ListTests {
     override func createArrayWithLinks() -> SwiftListOfSwiftObject {
         let realm = try! Realm()
         realm.beginWrite()
-        realm.create(SwiftListOfSwiftObject)
+        realm.createObject(ofType: SwiftListOfSwiftObject.self)
         try! realm.commitWrite()
-        let array = realm.objects(SwiftListOfSwiftObject).first!
+        let array = realm.allObjects(ofType: SwiftListOfSwiftObject.self).first!
 
         XCTAssertNotNil(array.realm)
         return array

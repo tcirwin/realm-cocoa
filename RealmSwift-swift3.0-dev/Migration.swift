@@ -111,8 +111,8 @@ public final class Migration {
     - parameter objectClassName: The name of the `Object` class to enumerate.
     - parameter block:           The block providing both the old and new versions of an object in this Realm.
     */
-    public func enumerate(_ objectClassName: String, _ block: MigrationObjectEnumerateBlock) {
-        rlmMigration.enumerateObjects(objectClassName) {
+    public func enumerateObjects(ofType typeName: String, _ block: MigrationObjectEnumerateBlock) {
+        rlmMigration.enumerateObjects(typeName) {
             block(oldObject: unsafeBitCast($0, to: MigrationObject.self),
                   newObject: unsafeBitCast($1, to: MigrationObject.self))
         }
@@ -131,8 +131,8 @@ public final class Migration {
     - returns: The created object.
     */
     @discardableResult
-    public func create(_ className: String, value: AnyObject = [:]) -> MigrationObject {
-        return unsafeBitCast(rlmMigration.createObject(className, withValue: value), to: MigrationObject.self)
+    public func createObject(ofType typeName: String, populatedWith value: AnyObject = [:]) -> MigrationObject {
+        return unsafeBitCast(rlmMigration.createObject(typeName, withValue: value), to: MigrationObject.self)
     }
 
     /**
@@ -155,8 +155,8 @@ public final class Migration {
     - returns: `true` if there was any data to delete.
     */
     @discardableResult
-    public func deleteData(_ objectClassName: String) -> Bool {
-        return rlmMigration.deleteData(forClassName: objectClassName)
+    public func deleteData(forType typeName: String) -> Bool {
+        return rlmMigration.deleteData(forClassName: typeName)
     }
 
     /**
@@ -169,8 +169,8 @@ public final class Migration {
     - parameter newName:   New name for the property to be renamed. Must not be present
                            in the old Realm.
     */
-    public func renamePropertyForClass(_ className: String, oldName: String, newName: String) {
-        rlmMigration.renameProperty(forClass: className, oldName: oldName, newName: newName)
+    public func renameProperty(onType typeName: String, from oldName: String, to newName: String) {
+        rlmMigration.renameProperty(forClass: typeName, oldName: oldName, newName: newName)
     }
 
     private init(_ rlmMigration: RLMMigration) {
@@ -198,4 +198,24 @@ internal func accessorMigrationBlock(_ migrationBlock: MigrationBlock) -> RLMMig
         // run migration
         migrationBlock(migration: Migration(migration), oldSchemaVersion: oldVersion)
     }
+}
+
+// MARK: Unavailable
+
+extension Migration {
+    @available(*, unavailable, renamed:"enumerateObjects(ofType:_:)")
+    public func enumerate(_ objectClassName: String, _ block: MigrationObjectEnumerateBlock) { }
+
+    @available(*, unavailable, renamed:"createObject(ofType:populatedWith:)")
+    public func create(_ className: String, value: AnyObject = [:]) -> MigrationObject {
+        fatalError()
+    }
+
+    @available(*, unavailable, renamed:"deleteData(forType:)")
+    public func deleteData(_ objectClassName: String) -> Bool {
+        fatalError()
+    }
+
+    @available(*, unavailable, renamed: "renameProperty(onType:from:to:)")
+    public func renamePropertyForClass(_ className: String, oldName: String, newName: String) { }
 }
