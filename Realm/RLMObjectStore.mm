@@ -95,14 +95,14 @@ static inline RLMObjectSchema *RLMGetVerifiedObjectSchema(__unsafe_unretained RL
                                                           NSString *const objectClassName) {
     RLMObjectSchema *schema = [realm.schema schemaForClassName:objectClassName];
     if (!schema) {
-        @throw RLMException(@"Object type '%@' is not persisted in the Realm. "
+        @throw RLMException(@"Object type '%@' is not managed in the Realm. "
                             @"If using a custom `objectClasses` / `objectTypes` array in your configuration, "
                             @"add `%@` to the list of `objectClasses` / `objectTypes`.",
                             objectClassName, objectClassName);
     }
     if (schema.properties.count == 0) {
         @throw RLMException(@"Can't add objects of type '%@' to the Realm as the class doesn't "
-                            @"define any persisted properites.",
+                            @"define any managed properites.",
                             objectClassName);
     }
     return schema;
@@ -179,7 +179,7 @@ void RLMAddObjectToRealm(__unsafe_unretained RLMObjectBase *const object,
             return;
         }
         // for differing realms users must explicitly create the object in the second realm
-        @throw RLMException(@"Object is already persisted in a Realm");
+        @throw RLMException(@"Object is already managed in a Realm");
     }
     if (object->_observationInfo && object->_observationInfo->hasObservers()) {
         @throw RLMException(@"Cannot add an object with observers to a Realm");
